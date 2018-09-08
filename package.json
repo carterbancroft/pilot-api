@@ -3,18 +3,27 @@
   "version": "1.0.0",
   "description": "API for Pilot a personal generic data tracking app",
   "main": "index.js",
+  "repository": "https://github.com/carterbancroft/pilot-api",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint .",
+    "start": "node index.js",
+    "watch": "npm run lint && npm test && nodemon index.js",
+    "pretest": "npm run lint",
+    "test": "mocha --recursive --colors **/*.test.js",
+    "preversion": "npm test"
   },
   "author": "Carter Bancroft",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.18.3",
+    "chalk": "^2.4.1",
+    "express": "^4.16.3",
     "mongoose": "^5.2.13"
   },
   "devDependencies": {
     "eslint": "^5.5.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "nodemon": "^1.18.4",
+    "supertest": "^3.3.0"
   }
 }
