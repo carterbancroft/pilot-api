@@ -21,7 +21,7 @@ const api = request(app)
 describe('/api', () => {
     describe('GET /', () => {
         it('should return the app name and version', async () => {
-            const res = await api.get('/version').expect(200)
+            const res = await api.get('/').expect(200)
 
             const { name, version } = require('../package.json')
             const expected = `${name} version ${version}`
