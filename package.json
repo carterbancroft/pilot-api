@@ -6,10 +6,11 @@
   "repository": "https://github.com/carterbancroft/pilot-api",
   "scripts": {
     "lint": "eslint .",
-    "start": "node index.js",
-    "watch": "npm run lint && npm test && nodemon index.js",
+    "start": "NODE_ENV=${NODE_ENV:-development} node index.js",
+    "watch": "NODE_ENV=${NODE_ENV:-development} run lint && nodemon index.js",
+    "watch:test": "NODE_ENV=${NODE_ENV:-unit_testing} run lint && npm test && nodemon index.js",
     "pretest": "npm run lint",
-    "test": "mocha --recursive --colors **/*.test.js",
+    "test": "NODE_ENV=${NODE_ENV:-unit_testing} mocha --recursive --colors **/*.test.js",
     "preversion": "npm test"
   },
   "author": "Carter Bancroft",
