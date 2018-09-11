@@ -10,12 +10,13 @@
     "watch": "NODE_ENV=${NODE_ENV:-development} run lint && nodemon index.js",
     "watch:test": "NODE_ENV=${NODE_ENV:-unit_testing} run lint && npm test && nodemon index.js",
     "pretest": "npm run lint",
-    "test": "NODE_ENV=${NODE_ENV:-unit_testing} mocha --recursive --colors **/*.test.js",
+    "test": "NODE_ENV=${NODE_ENV:-unit_testing} mocha --recursive --colors",
     "preversion": "npm test"
   },
   "author": "Carter Bancroft",
   "license": "ISC",
   "dependencies": {
+    "app-root-path": "^2.1.0",
     "body-parser": "^1.18.3",
     "chalk": "^2.4.1",
     "express": "^4.16.3",

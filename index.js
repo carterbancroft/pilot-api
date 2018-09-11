@@ -4,7 +4,7 @@ const chalk = require('chalk')
 const express = require('express')
 
 const api = require('./routes/index')
-const user_route = require('./routes/user')
+const user_route = require('./routes/user/index')
 
 // Open a connection to mongo
 require('./db/index')

@@ -1,9 +1,10 @@
 'use strict'
 
 const express = require('express')
+const app_root = require('app-root-path')
 const body_parser = require('body-parser')
 
-const { User } = require('../db/models/user')
+const { User } = require(`${app_root}/db/models/user`)
 
 const router = express.Router()
 

@@ -4,14 +4,15 @@ const assert = require('assert')
 const express = require('express')
 const request = require('supertest')
 const mongoose = require('mongoose')
+const app_root = require('app-root-path')
 const body_parser = require('body-parser')
 
-const { router } = require('./user')
-const { User } = require('../db/models/user')
-const { user_fixture } = require('../fixtures')
+const { router } = require(`${app_root}/routes/user`)
+const { User } = require(`${app_root}/db/models/user`)
+const { user_fixture } = require(`${app_root}/test/fixtures`)
 
 // Create a connection to the database
-require('../db')
+require(`${app_root}/db`)
 
 const app = express()
 
