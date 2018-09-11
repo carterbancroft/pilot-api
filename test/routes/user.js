@@ -32,7 +32,7 @@ function clean_response(body) {
 }
 
 
-describe('/api/user', () => {
+describe('/api/user.js', () => {
     after(() => mongoose.disconnect())
     afterEach(async () => await User.deleteMany({}))
 
