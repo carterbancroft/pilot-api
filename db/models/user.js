@@ -9,9 +9,8 @@ const user_schema = new mongoose.Schema({
     last_name: String,
     annual_income_in_cents: Number,
     transactions: [{
-        created_ts: Date,
-        category: String,
         item: String,
+        category: String,
         amount_in_cents: Number,
         tags: [String],
         transaction_type: String,

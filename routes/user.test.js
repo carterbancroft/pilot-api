@@ -88,4 +88,44 @@ describe('/api/user', () => {
                 .expect(409)
         })
     })
+
+
+    describe('POST /:user_name/transaction', () => {
+        before(async () => await (new User(user_fixture)).save())
+
+        it('should create a transaction for a new user', async () => {
+            const user_name = user_fixture.user_name
+
+            const new_transaction = {
+                category: 'some category',
+                item: 'some item',
+                amount_in_cents: 5000,
+                tags: [ 'some tag', 'some other tag' ],
+                transaction_type: 'expense'
+            }
+
+            const url = `/${user_name}/transaction`
+            const res = await api
+                .post(url)
+                .send(new_transaction)
+                .expect(200)
+
+            assert.deepEqual(res.body, new_transaction)
+
+            // Get the user from mongo and we'll make sure the transaction was
+            // added.
+            const user = await User.findOne({user_name})
+
+            // Should have two transactions (the fixture and this new one).
+            assert.equal(user.transactions.length, 2)
+
+            // Convert the mongoose object to a regular JS object.
+            const from_mongo = user.transactions[1].toObject()
+
+            // Delete _id since this is auto generated and I didn't mock it.
+            delete from_mongo._id
+
+            assert.deepEqual(from_mongo, new_transaction)
+        })
+    })
 })

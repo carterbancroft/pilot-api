@@ -13,12 +13,12 @@ router.use(body_parser.json())
 // Retrieve a user by user_name.
 router.get('/:user_name', async (req, res, next) => {
     const user_name = req.params.user_name
-    const u = await User.findOne({ user_name })
+    const user = await User.findOne({ user_name })
 
     // If there is no user by that name 404.
-    if (!u) return res.sendStatus(404)
+    if (!user) return res.sendStatus(404)
 
-    return res.send(u)
+    return res.send(user)
 })
 
 
@@ -31,22 +31,49 @@ router.post('/:user_name', async (req, res, next) => {
     )
     if (invalid_request) return res.status(400)
 
-    const user_name = req.body.user_name
+    const user_name = req.params.user_name
 
     // Make sure the user doesn't already exist.
-    const existing = await User.findOne({ user_name })
-    if (existing) return res.sendStatus(409)
+    const existing_user = await User.findOne({ user_name })
+    if (existing_user) return res.sendStatus(409)
 
     // Create a new user, save it to mongo and send the request body back.
-    const u = new User(req.body)
+    const user = new User(req.body)
 
-    await u.save()
+    await user.save()
 
     res.send(req.body)
 })
 
 // TODO: implement update user
 // TODO: implement delete user
+
+
+router.post('/:user_name/transaction', async (req, res, next) => {
+    const invalid_request = (
+        !req.body
+        || !req.body.category
+        || !req.body.item
+        || !req.body.amount_in_cents
+        || !req.body.transaction_type
+    )
+    if (invalid_request) return res.status(400)
+
+    const user_name = req.params.user_name
+    const user = await User.findOne({ user_name })
+
+    // If there is no user by that name 404.
+    if (!user) return res.sendStatus(404)
+
+    const transaction = req.body
+
+    await User.updateOne(
+        { user_name },
+        { $push: { transactions: transaction } }
+    )
+
+    res.send(req.body)
+})
 
 exports.router = router
 
