@@ -50,7 +50,7 @@ describe('/api/user.js', () => {
             // Clean up some cruft
             const body = clean_response(res.body)
 
-            assert.deepEqual(user_fixture, body)
+            assert.deepEqual(body, user_fixture)
         })
 
 
@@ -127,6 +127,28 @@ describe('/api/user.js', () => {
             delete from_mongo._id
 
             assert.deepEqual(from_mongo, new_transaction)
+        })
+    })
+
+
+    describe('DELETE /:user_name/transaction/:id', () => {
+        before(async () => await (new User(user_fixture)).save())
+
+        it('should delete a transaction', async () => {
+            const user_name = user_fixture.user_name
+            const user = await User.findOne({user_name})
+
+            const transaction_id = user.transactions[0]._id.toString()
+
+            const url = `/${user_name}/transaction/${transaction_id}`
+            await api
+                .delete(url)
+                .expect(200)
+
+            // Find the user again to check if the transaction was removed.
+            const modified = await User.findOne({user_name})
+
+            assert.equal(modified.transactions.length, 0)
         })
     })
 })

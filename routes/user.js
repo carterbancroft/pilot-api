@@ -1,6 +1,7 @@
 'use strict'
 
 const express = require('express')
+const mongoose = require('mongoose')
 const app_root = require('app-root-path')
 const body_parser = require('body-parser')
 
@@ -46,10 +47,8 @@ router.post('/:user_name', async (req, res, next) => {
     res.send(req.body)
 })
 
-// TODO: implement update user
-// TODO: implement delete user
 
-
+// Create a new transaction for a given user.
 router.post('/:user_name/transaction', async (req, res, next) => {
     const invalid_request = (
         !req.body
@@ -74,6 +73,26 @@ router.post('/:user_name/transaction', async (req, res, next) => {
     )
 
     res.send(req.body)
+})
+
+
+// Delete an existing transaction by _id for a given user.
+router.delete('/:user_name/transaction/:id', async (req, res, next) => {
+    const user_name = req.params.user_name
+    const user = await User.findOne({ user_name })
+
+    // If there is no user by that name 404.
+    if (!user) return res.sendStatus(404)
+
+    const _id = new mongoose.Types.ObjectId(req.params.id)
+
+    await User.updateOne(
+        { user_name },
+        { $pull: { transactions: { _id } } },
+        { new: true }
+    )
+
+    res.send({})
 })
 
 exports.router = router
