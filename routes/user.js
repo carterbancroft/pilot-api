@@ -85,8 +85,7 @@ router.delete('/:user_name/transaction/:id', async (req, res, next) => {
 
     await User.updateOne(
         { user_name },
-        { $pull: { transactions: { _id: req.params.id } } },
-        { new: true }
+        { $pull: { transactions: { _id: req.params.id } } }
     )
 
     res.send({})
