@@ -8,13 +8,6 @@ const user_schema = new mongoose.Schema({
     first_name: String,
     last_name: String,
     annual_income_in_cents: Number,
-    transactions: [{
-        item: String,
-        category: String,
-        amount_in_cents: Number,
-        tags: [String],
-        transaction_type: String,
-    }],
 })
 
 exports.User = mongoose.model('User', user_schema)

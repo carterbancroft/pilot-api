@@ -7,9 +7,10 @@ const mongoose = require('mongoose')
 const app_root = require('app-root-path')
 const body_parser = require('body-parser')
 
+const fixtures = require(`${app_root}/test/fixtures`)
 const { router } = require(`${app_root}/routes/user`)
 const { User } = require(`${app_root}/db/models/user`)
-const { user_fixture } = require(`${app_root}/test/fixtures`)
+const { Transaction } = require(`${app_root}/db/models/transaction`)
 
 // Create a connection to the database
 require(`${app_root}/db`)
@@ -26,7 +27,6 @@ const api = request(app)
 function clean_response(body) {
     delete body['_id']
     delete body['__v']
-    delete body.transactions[0]['_id']
 
     return body
 }
@@ -34,23 +34,26 @@ function clean_response(body) {
 
 describe('/api/user.js', () => {
     after(() => mongoose.disconnect())
-    afterEach(async () => await User.deleteMany({}))
+    afterEach(async () => {
+        await User.deleteMany({})
+        await Transaction.deleteMany({})
+    })
 
 
     describe('GET /:user_name', () => {
-        before(async () => await (new User(user_fixture)).save())
+        before(async () => await (new User(fixtures.user)).save())
 
         it('should get an existing user', async () => {
-            const url = `/${user_fixture.user_name}`
+            const url = `/${fixtures.user_name}`
             const res = await api
                 .get(url)
-                .send(user_fixture)
+                .send(fixtures.user)
                 .expect(200)
 
             // Clean up some cruft
             const body = clean_response(res.body)
 
-            assert.deepEqual(body, user_fixture)
+            assert.deepEqual(body, fixtures.user)
         })
 
 
@@ -58,7 +61,7 @@ describe('/api/user.js', () => {
             const url = '/missing_idiot'
             await api
                 .get(url)
-                .send(user_fixture)
+                .send(fixtures.user)
                 .expect(404)
         })
     })
@@ -66,79 +69,79 @@ describe('/api/user.js', () => {
 
     describe('POST /:user_name', () => {
         it('should create a new user', async () => {
-            const url = `/${user_fixture.user_name}`
+            const url = `/${fixtures.user_name}`
             const res = await api
                 .post(url)
-                .send(user_fixture)
+                .send(fixtures.user)
                 .expect(200)
 
             // Clean up some cruft
             const body = clean_response(res.body)
 
-            assert.deepEqual(body, user_fixture)
+            assert.deepEqual(body, fixtures.user)
         })
 
 
         it('should 409 if the user already exists', async () => {
-            await (new User(user_fixture)).save()
+            await (new User(fixtures.user)).save()
 
-            const url = `/${user_fixture.user_name}`
+            const url = `/${fixtures.user.user_name}`
             await api
                 .post(url)
-                .send(user_fixture)
+                .send(fixtures.user)
                 .expect(409)
         })
     })
 
 
     describe('POST /:user_name/transaction', () => {
-        before(async () => await (new User(user_fixture)).save())
+        before(async () => await (new User(fixtures.user)).save())
+        after(async ()  => await Transaction.deleteMany({}))
 
         it('should create a transaction for a new user', async () => {
-            const user_name = user_fixture.user_name
-
-            const new_transaction = {
-                category: 'some category',
-                item: 'some item',
-                amount_in_cents: 5000,
-                tags: [ 'some tag', 'some other tag' ],
-                transaction_type: 'expense'
-            }
+            const user_name = fixtures.user_name
 
             const url = `/${user_name}/transaction`
             const res = await api
                 .post(url)
-                .send(new_transaction)
+                .send(fixtures.transaction)
                 .expect(200)
 
-            assert.deepEqual(res.body, new_transaction)
+            assert.deepEqual(res.body, fixtures.transaction)
 
-            // Get the user from mongo and we'll make sure the transaction was
-            // added.
-            const user = await User.findOne({user_name})
+            // Get the transaction to make sure it was added
+            const all_transactions = await Transaction.find({user_name})
 
             // Should have two transactions (the fixture and this new one).
-            assert.equal(user.transactions.length, 2)
+            assert.equal(all_transactions.length, 1)
 
             // Convert the mongoose object to a regular JS object.
-            const from_mongo = user.transactions[1].toObject()
+            const from_mongo = all_transactions[0].toObject()
 
             // Delete _id since this is auto generated and I didn't mock it.
             delete from_mongo._id
+            delete from_mongo.__v
 
-            assert.deepEqual(from_mongo, new_transaction)
+            assert.deepEqual(from_mongo, fixtures.transaction)
         })
     })
 
 
     describe('DELETE /:user_name/transaction/:id', () => {
-        before(async () => await (new User(user_fixture)).save())
+        before(async () => {
+            const u = new User(fixtures.user)
+            await u.save()
+
+            const t = new Transaction(fixtures.transaction)
+            await t.save()
+        })
+
 
         it('should delete a transaction', async () => {
-            const user_name = user_fixture.user_name
-            const user = await User.findOne({user_name})
+            const user_name = fixtures.user_name
+            const transaction = await Transaction.findOne({user_name})
 
-            const transaction_id = user.transactions[0]._id.toString()
+            const transaction_id = transaction._id.toString()
 
             const url = `/${user_name}/transaction/${transaction_id}`
             await api
@@ -146,9 +149,9 @@ describe('/api/user.js', () => {
                 .expect(200)
 
             // Find the user again to check if the transaction was removed.
-            const modified = await User.findOne({user_name})
+            const modified = await Transaction.findOne({_id: transaction_id})
 
-            assert.equal(modified.transactions.length, 0)
+            assert(!modified)
         })
     })
 })

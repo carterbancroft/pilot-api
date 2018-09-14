@@ -5,6 +5,7 @@ const app_root = require('app-root-path')
 const body_parser = require('body-parser')
 
 const { User } = require(`${app_root}/db/models/user`)
+const { Transaction } = require(`${app_root}/db/models/transaction`)
 
 const router = express.Router()
 
@@ -64,12 +65,9 @@ router.post('/:user_name/transaction', async (req, res, next) => {
     // If there is no user by that name 404.
     if (!user) return res.sendStatus(404)
 
-    const transaction = req.body
+    const transaction = new Transaction(req.body)
 
-    await User.updateOne(
-        { user_name },
-        { $push: { transactions: transaction } }
-    )
+    await transaction.save()
 
     res.send(req.body)
 })
@@ -83,10 +81,7 @@ router.delete('/:user_name/transaction/:id', async (req, res, next) => {
     // If there is no user by that name 404.
     if (!user) return res.sendStatus(404)
 
-    await User.updateOne(
-        { user_name },
-        { $pull: { transactions: { _id: req.params.id } } }
-    )
+    await Transaction.deleteOne({ _id: req.params.id })
 
     res.send({})
 })
