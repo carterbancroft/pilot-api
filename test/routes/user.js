@@ -96,7 +96,6 @@ describe('/api/user.js', () => {
 
     describe('POST /:user_name/transaction', () => {
         before(async () => await (new User(fixtures.user)).save())
-        after(async ()  => await Transaction.deleteMany({}))
 
         it('should create a transaction for a new user', async () => {
             const user_name = fixtures.user_name
