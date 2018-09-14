@@ -23,15 +23,6 @@ app.use(body_parser.json())
 const api = request(app)
 
 
-// Helper to clean up some cruft that gets auto-added by mongoose
-function clean_response(body) {
-    delete body['_id']
-    delete body['__v']
-
-    return body
-}
-
-
 describe('/api/user.js', () => {
     after(() => mongoose.disconnect())
     afterEach(async () => {
@@ -51,9 +42,10 @@ describe('/api/user.js', () => {
                 .expect(200)
 
             // Clean up some cruft
-            const body = clean_response(res.body)
+            delete res.body._id
+            delete res.body.__v
 
-            assert.deepEqual(body, fixtures.user)
+            assert.deepEqual(res.body, fixtures.user)
         })
 
 
@@ -76,9 +68,10 @@ describe('/api/user.js', () => {
                 .expect(200)
 
             // Clean up some cruft
-            const body = clean_response(res.body)
+            delete res.body._id
+            delete res.body.__v
 
-            assert.deepEqual(body, fixtures.user)
+            assert.deepEqual(res.body, fixtures.user)
         })
 
 
@@ -90,6 +83,35 @@ describe('/api/user.js', () => {
                 .post(url)
                 .send(fixtures.user)
                 .expect(409)
+        })
+    })
+
+
+    describe('GET /:user_name/transaction', () => {
+        before(async () => {
+            const u = new User(fixtures.user)
+            await u.save()
+
+            const t = new Transaction(fixtures.transaction)
+            await t.save()
+        })
+
+
+        it('should get an array of transactions for the user', async () =>{
+            const user_name = fixtures.user_name
+
+            const url = `/${user_name}/transaction`
+            const res = await api
+                .get(url)
+                .expect(200)
+
+            assert.equal(res.body.length, 1)
+
+            // Delete _id since this is auto generated and I didn't mock it.
+            delete res.body[0]._id
+            delete res.body[0].__v
+
+            assert.deepEqual(res.body[0], fixtures.transaction)
         })
     })
 
