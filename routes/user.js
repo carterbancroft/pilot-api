@@ -52,7 +52,7 @@ router.get('/:user_name/transaction', async (req, res, next) => {
     const user_name = req.params.user_name
     const transactions = await Transaction.find({ user_name })
 
-    if (!transactions.length) return res.status(404)
+    if (!transactions.length) return res.send([])
 
     res.send(transactions)
 })
