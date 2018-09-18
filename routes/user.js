@@ -3,6 +3,7 @@
 const express = require('express')
 const app_root = require('app-root-path')
 const body_parser = require('body-parser')
+const debug = require('debug')('api:routes:user')
 
 const { User } = require(`${app_root}/db/models/user`)
 const { Transaction } = require(`${app_root}/db/models/transaction`)
@@ -12,13 +13,23 @@ const router = express.Router()
 router.use(body_parser.json())
 
 
+router.get('/', async (req, res, next) => {
+    res.json('User router works.')
+})
+
+
 // Retrieve a user by user_name.
 router.get('/:user_name', async (req, res, next) => {
     const user_name = req.params.user_name
     const user = await User.findOne({ user_name })
 
     // If there is no user by that name 404.
-    if (!user) return res.sendStatus(404)
+    if (!user) {
+        debug(`Could not find ${user_name}.`)
+        return res.sendStatus(404)
+    }
+
+    debug(`Found ${user_name}...`)
 
     return res.send(user)
 })
@@ -42,6 +53,8 @@ router.post('/:user_name', async (req, res, next) => {
     // Create a new user, save it to mongo and send the request body back.
     const user = new User(req.body)
 
+    debug(`Creating new user: ${user_name}`)
+
     await user.save()
 
     res.send(req.body)
@@ -52,7 +65,12 @@ router.get('/:user_name/transaction', async (req, res, next) => {
     const user_name = req.params.user_name
     const transactions = await Transaction.find({ user_name })
 
-    if (!transactions.length) return res.send([])
+    if (!transactions.length) {
+        debug('No transactions found.')
+        return res.send([])
+    }
+
+    debug(`Found ${transactions.length} transactions for ${user_name}`)
 
     res.send(transactions)
 })
@@ -73,9 +91,14 @@ router.post('/:user_name/transaction', async (req, res, next) => {
     const user = await User.findOne({ user_name })
 
     // If there is no user by that name 404.
-    if (!user) return res.sendStatus(404)
+    if (!user) {
+        debug(`Could not find ${user_name}.`)
+        return res.sendStatus(404)
+    }
 
     const transaction = new Transaction(req.body)
+
+    debug('Creating a new transaction...')
 
     await transaction.save()
 
@@ -89,9 +112,16 @@ router.delete('/:user_name/transaction/:id', async (req, res, next) => {
     const user = await User.findOne({ user_name })
 
     // If there is no user by that name 404.
-    if (!user) return res.sendStatus(404)
+    if (!user) {
+        debug(`Could not find ${user_name}.`)
+        return res.sendStatus(404)
+    }
 
-    await Transaction.deleteOne({ _id: req.params.id })
+    const _id = req.params.id
+
+    debug(`Deleting transaction ${_id}...`)
+
+    await Transaction.deleteOne({ _id })
 
     res.send({})
 })
