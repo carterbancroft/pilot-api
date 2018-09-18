@@ -25,7 +25,7 @@ router.get('/:user_name', async (req, res, next) => {
 
     // If there is no user by that name 404.
     if (!user) {
-        debug(`Could not find ${user_name}.`)
+        debug(`Could not find user ${user_name}`)
         return res.sendStatus(404)
     }
 
@@ -85,14 +85,17 @@ router.post('/:user_name/transaction', async (req, res, next) => {
         || !req.body.amount_in_cents
         || !req.body.transaction_type
     )
-    if (invalid_request) return res.status(400)
+    if (invalid_request) {
+        debug('Create transaction request is invalid.')
+        return res.status(400)
+    }
 
     const user_name = req.params.user_name
     const user = await User.findOne({ user_name })
 
     // If there is no user by that name 404.
     if (!user) {
-        debug(`Could not find ${user_name}.`)
+        debug(`Could not find user ${user_name}`)
         return res.sendStatus(404)
     }
 
@@ -113,7 +116,7 @@ router.delete('/:user_name/transaction/:id', async (req, res, next) => {
 
     // If there is no user by that name 404.
     if (!user) {
-        debug(`Could not find ${user_name}.`)
+        debug(`Could not find user ${user_name}`)
         return res.sendStatus(404)
     }
 
